@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram.utils.helpers import mention_html as util_mention_html
 import urllib.request, urllib.parse, json
 import re
 import gc
@@ -357,6 +358,14 @@ def start(update, context):
     if update.effective_chat.type == "private":
         message = "start-private"
     context.bot.send_message(chat_id=update.effective_chat.id, text=messages[message], parse_mode="html", disable_web_page_preview=True)
+    
+def signature(update, context):
+    """
+    creates a MediaWiki-like signature for no reason
+    """
+    messageFormat = "{0} {1:%H}:{1:%M}, {1:%d} {1:%B} {1:%Y} ({1:%Z})"
+    message = messageFormat.format(util_mention_html(update.message.from_user.id, update.message.from_user.username), update.message.date)
+    context.bot.send_message(chat_id=update.effective_chat.id, text=message, parse_mode="html")
 
 # Function used when testing changes to the bot with the command /echo. Uncomment to enable.
 #def echo(update, context):
@@ -370,6 +379,7 @@ link_handler = MessageHandler(Filters.regex(regex), link)
 config_handler = CommandHandler(['setwiki', 'setlang', 'toggle', 'listconfig'], config)
 start_handler = CommandHandler(['start', 'help'], start)
 delete_handler = CommandHandler('delete', delete)
+signature_handler = MessageHandler(Filters.regex("(?<!~)~{3,5}$"), signature)
 
 updater.dispatcher.add_handler(link_handler)
 updater.dispatcher.add_handler(config_handler)
